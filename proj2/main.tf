@@ -31,6 +31,15 @@ provider "google" {
   project = var.project
 }
 
+resource "google_dns_managed_zone" "scavenger-zone" {
+  name        = "scavenger-zone"
+  dns_name    = "cis.lifealgorithmic.com."
+  description = "DNS zone for the scavenger hunt"
+  labels = {
+    app = "scavenger-hunt"
+  }
+}
+
 resource "google_compute_network" "vpc_network" {
   name = "cis91-network"
 }
@@ -57,7 +66,7 @@ resource "google_compute_firewall" "default-firewall" {
   network = google_compute_network.vpc_network.name
   allow {
     protocol = "tcp"
-    ports = ["22"]
+    ports = ["22", "80"]
   }
   source_ranges = ["0.0.0.0/0"]
 }
