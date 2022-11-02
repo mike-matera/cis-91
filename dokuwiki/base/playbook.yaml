@@ -10,4 +10,7 @@
         name:
           - python3-pip 
           - python3-venv
-          - nginx
+          - apache2
+          - php
+          -php-xml
+          
