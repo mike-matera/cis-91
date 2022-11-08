@@ -1,4 +1,3 @@
-
 variable "credentials_file" {
   default = "/home/lar4749/cis-91-361423-9a20bb86a72d.json"
 }
@@ -31,12 +30,30 @@ provider "google" {
   project     = var.project
 }
 
+#
+# Network Configuration
+#
+
 resource "google_compute_network" "vpc_network" {
-  name = "cis91-network"
+  name = "dokuwiki-network"
 }
 
+resource "google_compute_firewall" "default_firewall" {
+  name    = "dokuwiki-firewall"
+  network = google_compute_network.vpc_network.name
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "80"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+}
+
+#
+# Instances
+#
+
 resource "google_compute_instance" "vm_instance" {
-  name         = "cis91"
+  name         = "dokuwiki"
   machine_type = "e2-micro"
 
   boot_disk {
@@ -52,17 +69,6 @@ resource "google_compute_instance" "vm_instance" {
   }
 }
 
-resource "google_compute_firewall" "default-firewall" {
-  name    = "default-firewall"
-  network = google_compute_network.vpc_network.name
-  allow {
-    protocol = "tcp"
-    ports    = ["22", "80", "3000", "5000"]
-  }
-  source_ranges = ["0.0.0.0/0"]
-}
-
 output "external-ip" {
   value = google_compute_instance.vm_instance.network_interface[0].access_config[0].nat_ip
 }
-
