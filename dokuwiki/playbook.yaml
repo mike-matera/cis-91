@@ -9,4 +9,44 @@
         cache_valid_time: 3600
         name:
           - apache2
-          
+          - php
+          - php-xml
+
+    - name: Create a ext4 filesystem for dokuwiki1
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/disk/by-id/google-dokuwiki1
+    
+    - name: Mount extra disk
+      ansible.posix.mount:
+        path: /var/www
+        src: /dev/disk/by-id/google-dokuwiki1
+        fstype: ext4
+        state: present
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: /var/www
+        state: directory
+    
+    - name: Extract dokuwiki-a6b3119b5d16cfdee29a855275c5759f.tgz into /var/www/html
+      ansible.builtin.unarchive:
+        src: /home/lar4749/cis-91/dokuwiki/dokuwiki-a6b3119b5d16cfdee29a855275c5759f.tgz
+        dest: /var/www/html
+
+    - name: Change file ownership
+      ansible.builtin.file:
+        path: /var/www/html/dokuwiki
+        state: directory
+        recurse: yes
+        owner: www-data
+        group: www-data
+        
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: backup
+        dest: /etc/cron.hourly/backup
+        owner: root
+        group: root
+        mode: '0744'
+        
