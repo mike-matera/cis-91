@@ -111,7 +111,7 @@ resource "google_compute_disk" "dokuwiki1" {
   labels = {
     environment = "dev"
   }
-  size = "100"
+  size = "10"
   
 }
 

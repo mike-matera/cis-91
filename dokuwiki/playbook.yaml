@@ -49,4 +49,15 @@
         owner: root
         group: root
         mode: '0744'
+
+    - name: Download logging file
+      ansible.builtin.get_url:
+        url: https://dl.google.com/cloudagents/add-logging-agent-repo.sh
+        dest: /tmp/add-logging-agent-repo.sh
+        mode: '0744'
+
+    - name: Run a script using an executable in a non-system path
+      ansible.builtin.script:
+        cmd: sudo bash /tmp/add-logging-agent-repo.sh --also-install
+    
         
