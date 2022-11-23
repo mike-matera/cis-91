@@ -1,0 +1,25 @@
+---
+- hosts: all
+  name: Add cis-92 packages
+  become: yes
+  tasks:
+    - name: Install packages 
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+        name:
+          - python3-pip 
+          - python3-venv
+
+    - name: Create a ext2 filesystem on /dev/sdb1
+      community.general.filesystem:
+        fstype: ext4
+        dev: /dev/disk/by-id/google-lab09
+
+    - name: Mount my filesystem
+      ansible.posix.mount:
+        path: /mnt
+        src: /dev/disk/by-id/google-lab09 
+        fstype: ext4
+        opts: defaults
+        state: present
