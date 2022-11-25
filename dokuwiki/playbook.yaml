@@ -57,7 +57,7 @@
         mode: '0744'
 
     - name: Run a script using an executable in a non-system path
-      ansible.builtin.script:
-        cmd: sudo bash /tmp/add-logging-agent-repo.sh --also-install
+      command:  sudo bash /tmp/add-logging-agent-repo.sh --also-install
+      
     
         
