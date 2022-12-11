@@ -8,11 +8,11 @@ variable "project" {
 }
 
 variable "region" {
-  default = "us-central1"
+  default = "us-west1"
 }
 
 variable "zone" {
-  default = "us-central1-a"
+  default = "us-west1-b"
 }
 
 terraform {
@@ -39,7 +39,33 @@ resource "google_compute_network" "vpc_network" {
 resource "google_compute_instance" "webservers" {
   count        = 3
   name         = "web${count.index}"
-  machine_type = "e2-micro"
+  machine_type = "e2-medium"
+
+  tags = ["web"]
+
+  labels = {
+      name: "web${count.index}"
+    }
+  boot_disk {
+    initialize_params {
+      image = "ubuntu-os-cloud/ubuntu-2004-lts"
+    }
+  }
+
+  network_interface {
+    network = google_compute_network.vpc_network.name
+    access_config {
+    }
+  }
+
+  
+}
+
+resource "google_compute_instance" "db" {
+  name         = "db"
+  machine_type = "e2-medium"
+
+  tags = ["db"]
 
   boot_disk {
     initialize_params {
@@ -53,8 +79,9 @@ resource "google_compute_instance" "webservers" {
     }
   }
 
-  labels = {
-    role: "web"
+  attached_disk {
+    source = google_compute_disk.data.self_link
+    device_name = "data"
   }
 }
 
@@ -63,9 +90,19 @@ resource "google_compute_firewall" "default-firewall" {
   network = google_compute_network.vpc_network.name
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "3000", "5000"]
+    ports    = ["22", "80", "5432"]
   }
   source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_disk" "data" {
+  name  = "data"
+  type  = "pd-ssd"
+  labels = {
+    environment = "dev"
+  }
+  size = "25"
+  
 }
 
 # Health Check
@@ -143,3 +180,6 @@ output "external-ip" {
   value = google_compute_instance.webservers[*].network_interface[0].access_config[0].nat_ip
 }
 
+output "external-ip-db" {
+  value = google_compute_instance.db.network_interface[0].access_config[0].nat_ip
+}
