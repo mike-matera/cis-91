@@ -8,11 +8,11 @@ variable "project" {
 }
 
 variable "region" {
-  default = "us-west1"
+  default = "us-central1"
 }
 
 variable "zone" {
-  default = "us-west1-b"
+  default = "us-central1-c"
 }
 
 terraform {
@@ -42,10 +42,11 @@ resource "google_compute_instance" "webservers" {
   machine_type = "e2-medium"
 
   tags = ["web"]
-
   labels = {
-      name: "web${count.index}"
-    }
+    name: "web${count.index}"
+    role: "web"
+  }
+  
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
@@ -56,9 +57,7 @@ resource "google_compute_instance" "webservers" {
     network = google_compute_network.vpc_network.name
     access_config {
     }
-  }
-
-  
+  } 
 }
 
 resource "google_compute_instance" "db" {
@@ -90,9 +89,19 @@ resource "google_compute_firewall" "default-firewall" {
   network = google_compute_network.vpc_network.name
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "5432"]
+    ports    = ["22", "80"]
   }
   source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_firewall" "db-firewall" {
+  name    = "db-firewall"
+  network = google_compute_network.vpc_network.name
+  allow {
+    protocol = "tcp"
+    ports    = ["5432"]
+  }
+  source_tags =  ["web", "db"]
 }
 
 resource "google_compute_disk" "data" {
@@ -113,8 +122,11 @@ resource "google_compute_health_check" "webservers" {
   check_interval_sec = 1
 
   http_health_check {
-    port = 80
+    port = "80"
+    request_path = "/health.html"
   }
+
+
 }
 
 # Instance group

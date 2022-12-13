@@ -97,6 +97,16 @@
           - composer
           - unzip 
       notify: Restart apache
+
+    - name: Update health.html so we can see the difference between hosts 
+      blockinfile:
+        path: /var/www/html/health.html
+        owner: www-data 
+        marker: "<!-- {mark} ANSIBLE MANAGED BLOCK -->"
+        create: true
+        block: | 
+          <h1>This is the server {{ inventory_hostname }}</h1>
+
     - name: Check if MediaWiki is downloaded and installed
       stat: 
         path: /var/www/html/index.html
@@ -139,10 +149,7 @@
     - name: Run the MediaWiki installer
       ansible.builtin.shell:
         chdir: /var/www/html
-        cmd: |
-
-
-        
+        cmd: | 
           sudo php maintenance/install.php --dbuser {{ db_user }} --dbpass {{ db_passwd }} --dbname {{ db_schema }} --dbserver db --dbport 5432 --dbtype postgres --pass {{ mediawiki_passwd }} --server "{{ lb_url }}" --scriptpath "" "{{ mediawiki_sitename }}" {{ mediawiki_user }}
         creates: /var/www/html/LocalSettings.php 
     - name: Get generated configuration 
