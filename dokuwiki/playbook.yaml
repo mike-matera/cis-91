@@ -22,7 +22,7 @@
         path: /var/www
         src: /dev/disk/by-id/google-dokuwiki1
         fstype: ext4
-        state: present
+        state: mounted
 
     - name: Create a directory if it does not exist
       ansible.builtin.file:
