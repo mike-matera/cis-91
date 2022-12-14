@@ -12,7 +12,7 @@ variable "region" {
 }
 
 variable "zone" {
-  default = "us-central1-a"
+  default = "us-central1-c"
 }
 
 terraform {
@@ -57,7 +57,7 @@ resource "google_compute_firewall" "default-firewall" {
   network = google_compute_network.vpc_network.name
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "3000", "5000"]
+    ports    = ["22"]
   }
   source_ranges = ["0.0.0.0/0"]
 }

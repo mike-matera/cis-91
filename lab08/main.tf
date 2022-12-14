@@ -12,7 +12,7 @@ variable "region" {
 }
 
 variable "zone" {
-  default = "us-central1-a"
+  default = "us-central1-c"
 }
 
 terraform {
@@ -44,6 +44,10 @@ resource "google_compute_instance" "vm_instance" {
       image = "ubuntu-os-cloud/ubuntu-2004-lts"
     }
   }
+  service_account {
+    email  = google_service_account.lab08-service-account.email
+    scopes = ["cloud-platform"]
+  }
 
   network_interface {
     network = google_compute_network.vpc_network.name
@@ -52,15 +56,28 @@ resource "google_compute_instance" "vm_instance" {
   }
 }
 
+resource "google_service_account" "lab08-service-account" {
+  account_id   = "lab08-service-account"
+  display_name = "lab08-service-account"
+  description = "Service account for lab 08"
+}
+
+resource "google_project_iam_member" "project_member" {
+  role = "roles/compute.viewer"
+  member = "serviceAccount:${google_service_account.lab08-service-account.email}"
+}
+
 resource "google_compute_firewall" "default-firewall" {
   name    = "default-firewall"
   network = google_compute_network.vpc_network.name
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "3000", "5000"]
+    ports    = ["22","80"]
   }
   source_ranges = ["0.0.0.0/0"]
 }
+
+
 
 output "external-ip" {
   value = google_compute_instance.vm_instance.network_interface[0].access_config[0].nat_ip

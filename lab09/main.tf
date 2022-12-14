@@ -12,7 +12,7 @@ variable "region" {
 }
 
 variable "zone" {
-  default = "us-central1-a"
+  default = "us-central1-c"
 }
 
 terraform {
@@ -50,16 +50,31 @@ resource "google_compute_instance" "vm_instance" {
     access_config {
     }
   }
-}
 
+  attached_disk {
+    source = google_compute_disk.lab09.self_link
+    device_name = "lab09"
+  }
+
+}
 resource "google_compute_firewall" "default-firewall" {
   name    = "default-firewall"
   network = google_compute_network.vpc_network.name
   allow {
     protocol = "tcp"
-    ports    = ["22", "80", "3000", "5000"]
+    ports    = ["22", "80"]
   }
   source_ranges = ["0.0.0.0/0"]
+}
+
+resource "google_compute_disk" "lab09" {
+  name  = "lab09"
+  type  = "pd-ssd"
+  labels = {
+    environment = "dev"
+  }
+  size = "100"
+  
 }
 
 output "external-ip" {
